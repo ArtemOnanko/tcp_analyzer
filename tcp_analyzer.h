@@ -19,10 +19,9 @@ typedef struct list_pair
 	failed_connection_t *fail_list;
 } list_pair_t;
 
-typedef struct 
+typedef struct
 {
 	char *dev_name;
 } thread_args_t;
 
 #endif
-

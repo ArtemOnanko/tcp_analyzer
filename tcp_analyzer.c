@@ -8,10 +8,10 @@ void *capture_packets(void *arg)
     char errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program fp;
     const char *filter_exp = "tcp[tcpflags] & (tcp-syn|tcp-ack|tcp-rst) != 0";
-    list_pair_t list_pair = {.syn_list = NULL, .fail_list=NULL}; // syn_list and fail_list pair
+    list_pair_t list_pair = {.syn_list = NULL, .fail_list = NULL}; // syn_list and fail_list pair
 
     // Open the device
-    //printf("Opening device %s\n" ,args->dev_name);
+    // printf("Opening device %s\n" ,args->dev_name);
     handle = pcap_open_live(args->dev_name, BUFSIZ, 1, 1000, errbuf);
     if (handle == NULL)
     {
@@ -37,12 +37,11 @@ void *capture_packets(void *arg)
     }
 
     // pass struct list_pair* to packet_handle
-    pcap_loop(handle, 0, packet_handler, (unsigned char*)&list_pair);
+    pcap_loop(handle, 0, packet_handler, (unsigned char *)&list_pair);
     pcap_close(handle);
     free(args);
     pthread_exit(NULL);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -53,60 +52,61 @@ int main(int argc, char *argv[])
     int all_interfaces = 0;
 
     // Command line options
-    while ((opt = getopt(argc, argv, "i:a")) != -1) 
+    while ((opt = getopt(argc, argv, "i:a")) != -1)
     {
-    	switch (opt) 
-	{
-    		case 'i':
-    			// Single interface mode
-    			alldevs = malloc(sizeof(pcap_if_t));
-    			alldevs->name = optarg;
-    			alldevs->next = NULL;
-    			break;
-    		case 'a':
-    			// All interfaces mode
-    			all_interfaces = 1;
-    			break;
-    		default:
-    			fprintf(stderr, "Usage: %s -i <interface> | -a\n", argv[0]);
-    			exit(EXIT_FAILURE);
-    	}
+        switch (opt)
+        {
+        case 'i':
+            // Single interface mode
+            alldevs = malloc(sizeof(pcap_if_t));
+            alldevs->name = optarg;
+            alldevs->next = NULL;
+            break;
+        case 'a':
+            // All interfaces mode
+            all_interfaces = 1;
+            break;
+        default:
+            fprintf(stderr, "Usage: %s -i <interface> | -a\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
     }
 
-    if (all_interfaces) 
+    if (all_interfaces)
     {
-    	// Find all interfaces
-    	if (pcap_findalldevs(&alldevs, errbuf) == -1) 
-	{
-    		fprintf(stderr, "Error in pcap_findalldevs: %s\n", errbuf);
-		exit(EXIT_FAILURE);
-    	}
-    } 
-    else if (alldevs == NULL) 
+        // Find all interfaces
+        if (pcap_findalldevs(&alldevs, errbuf) == -1)
+        {
+            fprintf(stderr, "Error in pcap_findalldevs: %s\n", errbuf);
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (alldevs == NULL)
     {
-    	fprintf(stderr, "Interface not specified. Use -i <interface> or -a for all interfaces\n");
-    	exit(EXIT_FAILURE);
+        fprintf(stderr, "Interface not specified. Use -i <interface> or -a for all interfaces\n");
+        exit(EXIT_FAILURE);
     }
 
     // Create a thread for each device
-    for (d = alldevs; d != NULL; d = d->next) 
+    for (d = alldevs; d != NULL; d = d->next)
     {
-	// Working only with active physical NICs (and loopback)
-    	//if(d->flags & PCAP_IF_UP && !(d->flags & PCAP_IF_LOOPBACK) && strcmp(d->name, "any"))
-    	if(d->flags & PCAP_IF_UP && strcmp(d->name, "any"))
-	{
-	    thread_args_t *args = malloc(sizeof(thread_args_t));
-    	    args->dev_name = d->name;
-      	    if (pthread_create(&thread_id, NULL, capture_packets, (void *)args) != 0) 
-	    {
-    		fprintf(stderr, "Error creating thread for device %s\n", d->name);
-    		free(args);
-    	    }
-	}
+        // Working only with active physical NICs (and loopback)
+        // if(d->flags & PCAP_IF_UP && !(d->flags & PCAP_IF_LOOPBACK) && strcmp(d->name, "any"))
+        if (d->flags & PCAP_IF_UP && strcmp(d->name, "any"))
+        {
+            thread_args_t *args = malloc(sizeof(thread_args_t));
+            args->dev_name = d->name;
+            if (pthread_create(&thread_id, NULL, capture_packets, (void *)args) != 0)
+            {
+                fprintf(stderr, "Error creating thread for device %s\n", d->name);
+                free(args);
+            }
+        }
     }
-    
+
     // Waite here indefinitely  instead of joining
-    for(;;) pause();
+    for (;;)
+        pause();
 
     if (all_interfaces)
     {

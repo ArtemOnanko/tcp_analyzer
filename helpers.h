@@ -21,9 +21,8 @@ typedef struct failed_connection
     struct failed_connection *next;
 } failed_connection_t;
 
-
 uint16_t expected_syn_delay(uint16_t retry_count);
-uint16_t add_failed_connection(struct in_addr src_ip, struct in_addr dst_ip, uint16_t dst_port, failed_connection_t  **fail_list);
+uint16_t add_failed_connection(struct in_addr src_ip, struct in_addr dst_ip, uint16_t dst_port, failed_connection_t **fail_list);
 void add_syn_packet(struct in_addr src_ip, struct in_addr dst_ip, uint16_t src_port, uint16_t dst_port, syn_packet_t **syn_list);
 void remove_syn_packet(struct in_addr src_ip, struct in_addr dst_ip, uint16_t src_port, uint16_t dst_port, syn_packet_t **syn_list);
 void check_syn_timeouts(syn_packet_t **syn_list, failed_connection_t **fail_list);
