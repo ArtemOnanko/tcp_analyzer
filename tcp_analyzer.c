@@ -11,7 +11,7 @@ void *capture_packets(void *arg)
     list_pair_t list_pair = {.syn_list = NULL, .fail_list = NULL}; // syn_list and fail_list pair
 
     // Open the device
-    // printf("Opening device %s\n" ,args->dev_name);
+    //printf("Opening device %s\n" ,args->dev_name);
     handle = pcap_open_live(args->dev_name, BUFSIZ, 1, 1000, errbuf);
     if (handle == NULL)
     {
@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
             // Single interface mode
             alldevs = malloc(sizeof(pcap_if_t));
             alldevs->name = optarg;
+            alldevs->flags = PCAP_IF_UP;
             alldevs->next = NULL;
             break;
         case 'a':
