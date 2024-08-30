@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Waite here indefinitely  instead of joining
+    // Wait here indefinitely  instead of joining
     for (;;)
         pause();
 
